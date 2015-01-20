@@ -1,4 +1,29 @@
 master  -
+		- Pull request #480: Missing type parameter for RuntimeEnvironment (thanks @jaceklaskowski)
+		- Pull request #472: Soundcloud provider (thanks @amertum)
+		- Pull request #438: Concur provier (thanks @anfuerer)
+		- Pull request #506: fix case of absoluteTimeoutInMinutes in samples (thanks @chris-cooper)
+		- Pull request #503: request fixing hardcoded HTTP header name in fromRequest (thanks @jglodek)
+		- Fixed signup and password change errors in the Scala sample app
+		- Added CSRF support 
+		- Fixed #435: i18n does not work
+		- Fixed #471: Continue with authentication if AvatarService is None (thanks @cemcatik)
+		- Fixed #484: missing public folder
+		- Fixed #501: Requests get redirected to wrong routes (Java) 
+		- Pull request #441: Update user-service.md (thanks @salaj1986)
+		- Pull request #495: disable generateRefReverseRouter (thanks @amertum)
+		- Pull request #461: Use large version of Facebook profile picture (thanks @nguyentruongtho)
+		- Fixed #468: Redirect loop when canceling Facebook Login Dialog
+		- Added crossbuild and upgraded to Play 2.3.7
+		- Fixed #494: source and target versions are 1.6 now
+		- Fixed #493: BoxedUnit cannot be cast to Authenticator (thanks @amertum)
+		- Upgraded to Play 2.3.5 and fixed most compiler warnings
+		- Fixed: CacheService.Default was ignoring ttl
+		- Switched back to Play 2.3.2 (problems publishing signed artifacts see https://github.com/sbt/sbt-pgp/issues/59)
+		- Added scalariform
+		- Separate creation and storage of mail tokens (thanks @normenmueller)
+		- Upgrade to Play 2.3.3 (thanks @benmccann)
+		- Updated GoogleProvider to use the new Google endpoints (see https://developers.google.com/+/api/auth-migration#timetable)
 		- Code is now compatible with Play 2.3
 		- Added SecureSocial.currentUser to support Websockets
 		- Fixed #429: null pointer exception in UserAware Java API (thanks @mangecoeur)

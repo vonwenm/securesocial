@@ -16,19 +16,19 @@
  */
 package securesocial.controllers
 
-import securesocial.core.SecureSocial
-import scala.concurrent.{ExecutionContext, Future}
-import play.api.mvc.RequestHeader
-import play.api.i18n.Messages
+import java.util.UUID
+
+import org.joda.time.DateTime
+import play.api.Play
 import play.api.data.Form
 import play.api.data.Forms._
 import play.api.data.validation.Constraints._
+import play.api.i18n.Messages
+import play.api.mvc.{ RequestHeader, Result }
+import securesocial.core.SecureSocial
 import securesocial.core.providers.MailToken
-import scala.Some
-import play.api.mvc.SimpleResult
-import java.util.UUID
-import org.joda.time.DateTime
-import play.api.Play
+
+import scala.concurrent.Future
 
 /**
  * The base controller for password reset and password change operations
@@ -42,8 +42,8 @@ abstract class MailTokenBasedOperations[U] extends SecureSocial[U] {
   val DefaultDuration = 60
   val TokenDuration = Play.current.configuration.getInt(TokenDurationKey).getOrElse(DefaultDuration)
 
-  val startForm = Form (
-    Email -> email.verifying( nonEmpty )
+  val startForm = Form(
+    Email -> email.verifying(nonEmpty)
   )
 
   /**
@@ -54,17 +54,11 @@ abstract class MailTokenBasedOperations[U] extends SecureSocial[U] {
    * @return a MailToken instance
    */
   def createToken(email: String, isSignUp: Boolean): Future[MailToken] = {
-    val uuid = UUID.randomUUID().toString
     val now = DateTime.now
 
-    val token = MailToken(
-      uuid, email.toLowerCase,
-      now,
-      now.plusMinutes(TokenDuration),
-      isSignUp = isSignUp
-    )
-    import ExecutionContext.Implicits.global
-    env.userService.saveToken(token).map(_ => token)
+    Future.successful(MailToken(
+      UUID.randomUUID().toString, email.toLowerCase, now, now.plusMinutes(TokenDuration), isSignUp = isSignUp
+    ))
   }
 
   /**
@@ -78,17 +72,16 @@ abstract class MailTokenBasedOperations[U] extends SecureSocial[U] {
    * @return the action result
    */
   protected def executeForToken(token: String, isSignUp: Boolean,
-                                f: MailToken => Future[SimpleResult])
-                               (implicit request: RequestHeader): Future[SimpleResult] =
-  {
-    import ExecutionContext.Implicits.global
-    env.userService.findToken(token).flatMap {
-      case Some(t) if !t.isExpired && t.isSignUp == isSignUp => f(t)
-      case _ =>
-        val to = if ( isSignUp ) env.routes.signUpUrl else env.routes.resetPasswordUrl
-        Future.successful(Redirect(to).flashing(Error -> Messages(BaseRegistration.InvalidLink)))
+    f: MailToken => Future[Result])(implicit request: RequestHeader): Future[Result] =
+    {
+      import scala.concurrent.ExecutionContext.Implicits.global
+      env.userService.findToken(token).flatMap {
+        case Some(t) if !t.isExpired && t.isSignUp == isSignUp => f(t)
+        case _ =>
+          val to = if (isSignUp) env.routes.signUpUrl else env.routes.resetPasswordUrl
+          Future.successful(Redirect(to).flashing(Error -> Messages(BaseRegistration.InvalidLink)))
+      }
     }
-  }
 
   /**
    * The result sent after the start page is handled
@@ -96,7 +89,7 @@ abstract class MailTokenBasedOperations[U] extends SecureSocial[U] {
    * @param request the current request
    * @return the action result
    */
-  protected def handleStartResult()(implicit request: RequestHeader): SimpleResult = Redirect(env.routes.loginPageUrl)
+  protected def handleStartResult()(implicit request: RequestHeader): Result = Redirect(env.routes.loginPageUrl)
 
   /**
    * The result sent after the operation has been completed by the user
@@ -104,5 +97,5 @@ abstract class MailTokenBasedOperations[U] extends SecureSocial[U] {
    * @param request the current request
    * @return the action result
    */
-  protected def confirmationResult()(implicit request: RequestHeader): SimpleResult = Redirect(env.routes.loginPageUrl)
+  protected def confirmationResult()(implicit request: RequestHeader): Result = Redirect(env.routes.loginPageUrl)
 }
